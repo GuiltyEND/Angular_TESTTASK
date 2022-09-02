@@ -1,0 +1,17 @@
+<select
+  [value]="currencyInput.code"
+  (change)="setCurrency(currency.value)"
+  #currency
+>
+  <option
+    *ngFor="let code of codes"
+    [selected]="defaultCurrency === code"
+  >{{ code }}</option>
+</select>
+
+<input
+  type="text"
+  [value]="currencyInput.value"
+  (input)="setValue(currencyValue.value)"
+  #currencyValue
+/>

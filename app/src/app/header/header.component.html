@@ -1,0 +1,10 @@
+<nav class="container d-flex justify-content-evenly">
+  <div>USD Currency
+    <span *ngIf="usdCurrency !== null">{{ usdCurrency.conversion_rates.UAH }}</span>
+    <span *ngIf="usdCurrency === null">{{ 0 }}</span>
+  </div>
+  <div>EUR Currency
+    <span *ngIf="eurCurrency !== null">{{ eurCurrency.conversion_rates.UAH }}</span>
+    <span *ngIf="eurCurrency === null">{{ 0 }}</span>
+  </div>
+</nav>
