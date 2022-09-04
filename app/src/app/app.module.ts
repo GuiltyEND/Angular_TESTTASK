@@ -6,6 +6,7 @@ import { AppComponent } from './app.component';
 import { HeaderComponent } from './header/header.component';
 import {currencyRepository} from "./repositories/currencyRepository";
 import { CurrencyInputComponent } from './currency-input/currency-input.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { CurrencyInputComponent } from './currency-input/currency-input.componen
   ],
   imports: [
     BrowserModule,
+    HttpClientModule,
     NgbModule,
   ],
   providers: [currencyRepository],

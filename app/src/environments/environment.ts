@@ -4,8 +4,8 @@
 
 export const environment = {
   production: false,
-  apiExchangeToken: '0bce52e850f85a5e90e0790d',
-  apiUrl: 'https://v6.exchangerate-api.com/v6/0bce52e850f85a5e90e0790d',
+  apiExchangeToken: 'a009b7f7561731cd960b54da',
+  apiUrl: 'https://v6.exchangerate-api.com/v6/a009b7f7561731cd960b54da',
 };
 
 /*

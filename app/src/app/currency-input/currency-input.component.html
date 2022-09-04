@@ -1,6 +1,6 @@
 <select
   [value]="currencyInput.code"
-  (change)="setCurrency(currency.value)"
+  (change)="setCurrency(currency.value, true)"
   #currency
 >
   <option
@@ -12,6 +12,6 @@
 <input
   type="text"
   [value]="currencyInput.value"
-  (input)="setValue(currencyValue.value)"
+  (input)="isNumeric(currencyValue.value) && setValue(currencyValue.value, true)"
   #currencyValue
 />

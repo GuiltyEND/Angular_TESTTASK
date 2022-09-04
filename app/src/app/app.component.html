@@ -1,14 +1,26 @@
 <app-header></app-header>
 
 <app-currency-input
-  id="baseCurrencyCompId"
+  id="compId-0"
   #baseCurrencyComp
   [externalCurrencyInput]="externalCurrencyInput"
   (onInputChange)="updateInput($event)"  
 ></app-currency-input>
 <app-currency-input
-  id="targetCurrencyCompId"
+  id="compId-1"
   #targetCurrencyComp
   [externalCurrencyInput]="externalCurrencyInput"
   (onInputChange)="updateInput($event)"  
 ></app-currency-input>
+<!-- <app-currency-input
+  id="compId-2"
+  #targetCurrencyComp
+  [externalCurrencyInput]="externalCurrencyInput"
+  (onInputChange)="updateInput($event)"  
+></app-currency-input>
+<app-currency-input
+  id="compId-3"
+  #targetCurrencyComp
+  [externalCurrencyInput]="externalCurrencyInput"
+  (onInputChange)="updateInput($event)"  
+></app-currency-input> -->

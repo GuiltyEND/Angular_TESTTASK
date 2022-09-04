@@ -18,8 +18,22 @@ export class HeaderComponent implements OnInit {
   }
 
   private async fetchCurrencies() {
-    this.usdCurrency = await this.currencyRepository.usdCurrency()
-    this.eurCurrency = await this.currencyRepository.eurCurrency()
+    this.currencyRepository.usdCurrency().subscribe({
+      next: (response) => { //next() callback
+        console.log('response received' + response)
+        this.usdCurrency = response; 
+      },
+      error: (error) => { /*error() callback*/ },
+      complete: () => { /*complete() callback*/ }
+    });
+    this.currencyRepository.eurCurrency().subscribe({
+      next: (response) => { //next() callback
+        console.log('response received' + response)
+        this.eurCurrency = response; 
+      },
+      error: (error) => { /*error() callback*/ },
+      complete: () => { /*complete() callback*/}
+    });    
   }
 
 }

@@ -1,119 +1,89 @@
 import { Component, ViewChild,
   AfterViewInit,
-  ElementRef } from '@angular/core';
+  ElementRef, 
+  ViewChildren,
+  QueryList} from '@angular/core';
 import {CurrencyInput} from "./interfaces/currency-input";
 import {currencyRepository} from "./repositories/currencyRepository";
 import {CurrencyInputComponent} from "./currency-input/currency-input.component"
+import { ChangedComponent } from './utils/changedComponent';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
+
 export class AppComponent implements AfterViewInit{
   title = 'app';
-  externalCurrencyInput: CurrencyInput|null = null;
-  baseExtCurrency!: CurrencyInput;
-  targetExtCurrency!: CurrencyInput;
-  baseCompId = "baseCurrencyCompId";
-  targetCompId = "targetCurrencyCompId";
-  leftSelectCompChanged = "";
-  rightSelectCompChanged = "";
-  defaultBaseCurrencySelectCode!: string;
-  defaultTargetCurrencySelectCode!: string;
+  externalCurrencyInput: CurrencyInput|null = null;  
+  childrenCompList!: CurrencyInputComponent[];  
+
+  @ViewChildren(CurrencyInputComponent) private childInputCompList!: QueryList<CurrencyInputComponent>;
 
   constructor(private currencyRepository: currencyRepository) { }
-  @ViewChild('baseCurrencyComp') baseCurrencyCompRef!: CurrencyInputComponent;
-  @ViewChild('targetCurrencyComp') targetCurrencyCompRef!: CurrencyInputComponent;
-  
+
   ngAfterViewInit() {
-    this.defaultBaseCurrencySelectCode = this.baseCurrencyCompRef.getCurrency();
-    this.defaultTargetCurrencySelectCode = this.targetCurrencyCompRef.getCurrency();
-    // console.log(`LLLL ${defaultBaseCurrencySelectCode} == ${defaultTargetCurrencySelectCode} LLLL`);
+    this.childrenCompList = this.childInputCompList.toArray();    
+  }
+  
+  getChildrenValuesState(): string[] {
+    let newState: any[] = [];
+    this.childrenCompList.forEach(el => {
+      newState = [ ...newState,
+         el.getCurrency(),
+         el.getValue(),
+         el.currencyInput.changed,
+         el.currencyInput.byUser ]      
+    });
+    return newState;
+  }
+  
+  convertBaseToTargetCurrency(amount: number,
+      baseCode: string,
+      targetCode: string,
+      reverseConvertion: boolean) {
+
+    this.currencyRepository.convertBaseToAnotherCurrency(
+      amount, baseCode, targetCode, 
+    ).subscribe({
+      next: (response) => { //next() callback
+        let index = (reverseConvertion) ? 0 : 1;
+        this.childrenCompList[index].setValue(response.conversion_result, false);
+      },
+      error: (error) => { /*error() callback*/ },
+      complete: () => { /*complete() callback*/}
+    });
   }
 
   async updateInput(externalCurrencyInput: CurrencyInput) {
     this.externalCurrencyInput = externalCurrencyInput
-    // console.log(this.externalCurrencyInput.compId +  " Selected currency =  " + externalCurrencyInput.code + " " + externalCurrencyInput.value);
-    if (this.externalCurrencyInput.compId == this.baseCompId) {
-      if(this.externalCurrencyInput.code != this.leftSelectCompChanged) {
-        let result = await this.currencyRepository.convertBaseToAnotherCurrency(
-          this.externalCurrencyInput.value,
-          this.externalCurrencyInput.code,
-          this.defaultTargetCurrencySelectCode
-        );
-        this.targetCurrencyCompRef.setValue(result.conversion_result);
-
-        this.leftSelectCompChanged = externalCurrencyInput.code; //@todo
-        this.baseExtCurrency = this.externalCurrencyInput;
-        console.log(result.conversion_result);
-      }
-    }
-    if (this.externalCurrencyInput.compId == this.targetCompId) {
-      if(this.externalCurrencyInput.code != this.rightSelectCompChanged) {
-        let result = await this.currencyRepository.convertBaseToAnotherCurrency(
-          this.externalCurrencyInput.value,
-          this.externalCurrencyInput.code,
-          this.defaultBaseCurrencySelectCode // this.baseExtCurrency.code
-        );
-        this.baseCurrencyCompRef.setValue(result.conversion_result);
-        this.rightSelectCompChanged = externalCurrencyInput.code; //@todo
-        this.targetExtCurrency = this.externalCurrencyInput;
-        console.log(result.conversion_result);
-      }
+    let newState = this.getChildrenValuesState(); /*ex: ['USD', 1, 0, false, 'UAH', 2.9153, 0, true]*/ 
+     
+    if (newState[3] && Number(newState[2]) === 1) {
+      this.convertBaseToTargetCurrency(parseFloat(newState[1]), newState[0], newState[4], false);    
+      return;
     }
 
-    // if(externalCurrencyInput.compId == this.baseCompId) {
-    //   this.baseExtCurrency = externalCurrencyInput;
-    //   this.firstCompChanged = this.baseCompId;      
-    //   console.log("Left comp updated")
-    // }
-    // if(this.firstCompChanged == this.baseCompId && externalCurrencyInput.compId == this.targetCompId) {
-    //   console.log("CONVERT")
-    //   console.log("AMOUNT = " + this.baseExtCurrency.value);
-    //   console.log("TARGET = " + this.externalCurrencyInput.code);
-    //   console.log("BASE = " + this.baseExtCurrency.code);
-    //   let result = await this.currencyRepository.convertBaseToAnotherCurrency(
-    //     this.baseExtCurrency.value,
-    //     this.externalCurrencyInput.code,
-    //     this.baseExtCurrency.code
-    //   );
-    //   this.targetCurrencyCompRef.setValue(result.conversion_result)
-    //   console.log(result.conversion_result);
-    //   this.firstCompChanged =""
-    // }
+    if (newState[3] && Number(newState[2]) === 0) {
+      if(Number(newState[6]) !== 1) {
+        this.convertBaseToTargetCurrency(parseFloat(newState[1]), newState[0], newState[4], false);
+        return;
+      }
+      if(!newState[7]) {
+        this.convertBaseToTargetCurrency(parseFloat(newState[1]), newState[0], newState[4], false);
+        return;
+      }
+    } 
+    
+    if (newState[7] && Number(newState[6]) === 1) {
+      this.convertBaseToTargetCurrency(parseFloat(newState[5]), newState[4], newState[0], true);        
+      return;
+    }
 
-    // if(externalCurrencyInput.compId == this.targetCompId) {
-    //   this.baseExtCurrency = externalCurrencyInput;
-    //   this.firstCompChanged = this.targetCompId;      
-    //   console.log("Right comp updated")
-    // }
-    // if(this.firstCompChanged == this.targetCompId && externalCurrencyInput.compId == this.baseCompId) {
-    //   console.log("CONVERT")
-    //   console.log("AMOUNT = " + this.targetExtCurrency.value);
-    //   console.log("TARGET = " + this.externalCurrencyInput.code);
-    //   console.log("BASE = " + this.targetExtCurrency.code);
-    //   let result = await this.currencyRepository.convertBaseToAnotherCurrency(
-    //     this.targetExtCurrency.value,
-    //     this.externalCurrencyInput.code,
-    //     this.targetExtCurrency.code
-    //   );
-    //   this.baseCurrencyCompRef.setValue(result.conversion_result)
-    //   console.log(result.conversion_result);
-    //   this.firstCompChanged =""
-    // }
-    // if(externalCurrencyInput.compId == this.targetCompId) {
-    //   this.targetExtCurrency = externalCurrencyInput;
-    //   this.firstCompChanged = this.targetCompId;
-    //   console.log("First need to be updated")      
-    // }
-    // if(this.lastCompChanged == this.baseCompId) {
-    //   console.log("AMOUNT = " + this.baseExtCurrency.value);
-    //   console.log("TARGET = " + this.defaultTargetCurrencySelectCode);
-    //   console.log("BASE = " + this.baseExtCurrency.code);
-    //   // this.currencyRepository.convertBaseToAnotherCurrency(this.baseExtCurrency.value, this.targetExtCurrency.code, this.baseExtCurrency.code);
-    // }
-    
-    
+    if (newState[7] && Number(newState[6]) === 0) {
+      this.convertBaseToTargetCurrency(parseFloat(newState[1]), newState[0], newState[4], false);    
+      return;
+    }
   }
 }
